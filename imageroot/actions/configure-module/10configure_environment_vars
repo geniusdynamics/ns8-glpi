@@ -13,10 +13,10 @@ import agent
 # If parsing fails, output everything to stderr
 data = json.load(sys.stdin)
 
-#This is specific to you module, so you need to change it accordingly.
-GLPI_VERSION = data.get("GLPI_VERSION", "10.0.16")
+# This is specific to you module, so you need to change it accordingly.
+GLPI_VERSION = data.get("GLPI_VERSION", "11")
 glpi_config = {
     "VERSION_GLPI": GLPI_VERSION,
 }
 agent.write_envfile("glpi.env", glpi_config)
-#agent.dump_env()
+# agent.dump_env()
