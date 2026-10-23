@@ -13,8 +13,9 @@ import agent
 # If parsing fails, output everything to stderr
 data = json.load(sys.stdin)
 
-#This is specific to you module, so you need to change it accordingly.
-GLPI_VERSION = data.get("GLPI_VERSION", "10.0.16")
+# Informational only: the GLPI release is the one bundled in the app image
+# (see app_version in build-images.sh); images >= 10.0.28 ignore VERSION_GLPI.
+GLPI_VERSION = "10.0.28"
 glpi_config = {
     "VERSION_GLPI": GLPI_VERSION,
 }
