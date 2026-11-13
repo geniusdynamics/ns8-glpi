@@ -3,6 +3,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+#
+# Official GLPI image (glpi/glpi). The glpi-data volume holds the config,
+# files, marketplace and logs directories. At start the image waits for the
+# database, installs GLPI on an empty database or updates the schema of an
+# existing one, then runs Apache and the GLPI cron worker.
+#
 [Unit]
 Description=Podman  glpi-app.service
 BindsTo=glpi.service
@@ -11,19 +17,16 @@ After=glpi.service mariadb-app.service
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
 EnvironmentFile=%S/state/environment
-EnvironmentFile=-%S/state/smarthost.env
 WorkingDirectory=%S/state
 Restart=always
+RestartSec=10
 TimeoutStopSec=70
-ExecStartPre=/bin/mkdir -p config
 ExecStartPre=/bin/rm -f %t/glpi-app.pid %t/glpi-app.ctr-id
-ExecStartPre=-runagent discover-smarthost
 ExecStart=/usr/bin/podman run --conmon-pidfile %t/glpi-app.pid \
     --cidfile %t/glpi-app.ctr-id --cgroups=no-conmon \
     --pod-id-file %t/glpi.pod-id --replace -d --name  glpi-app \
-    --volume glpi_html:/var/www/html/glpi/:z \
+    --volume glpi-data:/var/glpi:Z \
     --env-file=%S/state/glpi-db.env \
-    --env-file=%S/state/glpi.env \
     ${GLPI_IMAGE}
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/glpi-app.ctr-id -t 10
 ExecReload=/usr/bin/podman kill -s HUP glpi-app
