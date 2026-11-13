@@ -17,7 +17,8 @@ reponame="glpi"
 # Node.js 25+ no longer ships Corepack, install it from npm
 # renovate: datasource=npm packageName=corepack
 corepack_version=0.36.0
-app_version="master"
+# renovate: datasource=docker packageName=docker.io/geniusdynamics/glpi
+app_version=master
 # Create a new empty container image
 container=$(buildah from scratch)
 
