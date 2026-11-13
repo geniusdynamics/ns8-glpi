@@ -18,7 +18,9 @@ reponame="glpi"
 # renovate: datasource=npm packageName=corepack
 corepack_version=0.36.0
 # renovate: datasource=docker packageName=docker.io/geniusdynamics/glpi
-app_version=master
+# Tag of docker.io/geniusdynamics/glpi built from geniusdynamics/docker-glpi
+# (GLPI 10.0.28, PHP 8.3.36 with the PHP2Shell fixes)
+app_version=10.0.28
 # Create a new empty container image
 container=$(buildah from scratch)
 
