@@ -1,9 +1,12 @@
 {
   "name": "GLPI",
   "description": {
-    "en": "GLPI is an incredible Service Management software based on open source technologies. It helps you plan and manage IT changes in an easy way, solve problems efficiently, automate your business processes and gain control over your IT infrastructure."
+    "en": "GLPI is an incredible Service Management software based on open source technologies. It helps you plan and manage IT changes in an easy way, solve problems efficiently, automate your business processes and gain control over your IT infrastructure.",
+    "it": "GLPI è un software di gestione dei servizi IT e degli asset, con helpdesk e inventario."
   },
-  "categories": [],
+  "categories": [
+    "system_administration"
+  ],
   "authors": [
     {
       "name": "Kemboi Elvis",
