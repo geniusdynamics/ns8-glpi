@@ -1,0 +1,14 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 Genius Dynamics
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Instances of the old geniusdynamics/glpi image move to the official
+# glpi/glpi image: see bin/migrate-glpi-data. 20restart then starts GLPI 11,
+# which updates the database schema.
+
+set -e
+exec 1>&2
+migrate-glpi-data

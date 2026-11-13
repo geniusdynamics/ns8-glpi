@@ -6,6 +6,7 @@
 #
 
 import json
+import os
 import sys
 import agent
 import secrets
@@ -35,15 +36,17 @@ agent.write_envfile("database.env", mariadb_config)
 
 # GLPI DB
 
+# Database settings of the official glpi/glpi image. The containers share
+# the pod network: reach MariaDB on 127.0.0.1.
 glpi_db = {
-    "TIMEZONE": "Europe/Brussels",
-    "MARIADB_DB_TYPE": "mysql",
-    "MARIADB_DB_HOST": "mariadb-app",
-    "MARIADB_DB_PORT": "3306",
-    "MARIADB_DB_USER": MARIA_DB_USER,
-    "MARIADB_DB_PASSWORD": MARIA_DB_PASSWORD,
-    "MARIADB_DB_NAME": MARIA_DB_DATABASE
+    "GLPI_DB_HOST": "127.0.0.1",
+    "GLPI_DB_PORT": "3306",
+    "GLPI_DB_NAME": MARIA_DB_DATABASE,
+    "GLPI_DB_USER": MARIA_DB_USER,
+    "GLPI_DB_PASSWORD": MARIA_DB_PASSWORD,
 }
 agent.write_envfile("glpi-db.env", glpi_db)
 
-#agent.dump_env()
+# Both files hold database passwords: owner only
+os.chmod("database.env", 0o600)
+os.chmod("glpi-db.env", 0o600)
