@@ -1,7 +1,8 @@
 # ns8-glpi
 
-This is a template module for [NethServer 8](https://github.com/NethServer/ns8-core).
-To start a new module from it:
+[GLPI](https://glpi-project.org) IT asset management and service desk for
+[NethServer 8](https://github.com/NethServer/ns8-core), with the official
+[`glpi/glpi`](https://hub.docker.com/r/glpi/glpi) image (GLPI 11) and MariaDB.
 
 
 ## Install
@@ -44,10 +45,32 @@ The above command will:
 - configure a virtual host for trafik to access the instance
 
 Defaults
-## Initial Setup Configs
-  "MySQL host": 127.0.0.1
-  "MySQL USer": glpi
-  "MySQL PAssword": Glpi,1234
+## First login
+
+At its first start the `glpi/glpi` image installs GLPI in the module
+database. Log in with the GLPI default accounts and change their passwords
+at once (GLPI lists them on its home page): `glpi`/`glpi` (super-admin),
+`tech`/`tech`, `normal`/`normal` and `post-only`/`postonly`.
+
+At every start the image also updates the database schema, after an update
+of the module to a newer GLPI version.
+
+## Update from GLPI 10
+
+Releases up to 2.0.0 ran the `geniusdynamics/glpi` image (GLPI 10). Updating
+the module to this version:
+
+- converts `glpi-db.env` to the `GLPI_DB_*` settings of the official image;
+- copies the GLPI `config` (database settings and the `glpicrypt.key`
+  encryption key), `files` and `marketplace` directories from the old
+  `glpi_html` volume to the new `glpi-data` volume;
+- starts GLPI 11, which updates the database schema from GLPI 10.
+
+Back up the instance before updating. Plugins installed in the old
+`plugins` directory are not copied: install their GLPI 11 versions from the
+marketplace. The old `glpi_html` volume is left in place; once GLPI 11 works,
+remove it with `runagent -m glpi1 podman volume rm glpi_html`. Backups of the
+old releases restore the same way.
 
 ## Get the configuration
 You can retrieve the configuration with

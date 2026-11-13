@@ -1,0 +1,13 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 Genius Dynamics
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# A backup of the old geniusdynamics/glpi image holds the glpi_html volume
+# and MARIADB_DB_* settings: convert them for the official glpi/glpi image.
+
+set -e
+exec 1>&2
+migrate-glpi-data

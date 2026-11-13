@@ -1,0 +1,76 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 Genius Dynamics
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+#
+# Move an instance of the old geniusdynamics/glpi image to the official
+# glpi/glpi image. Run from the state directory by update-module.d and
+# restore-module; it does nothing when there is nothing to migrate.
+#
+# - glpi-db.env: MARIADB_DB_* settings become the GLPI_DB_* settings read by
+#   the official image, with the database on 127.0.0.1.
+# - The old glpi_html volume held the whole GLPI tree. Its config (database
+#   settings and the glpicrypt.key encryption key), files and marketplace
+#   directories are copied to the glpi-data volume, mounted on /var/glpi.
+#   Without config_db.php the official image would run a new installation
+#   instead of updating the existing database.
+#
+# glpi_html is kept untouched: remove it by hand once GLPI 11 works.
+#
+
+set -e -o pipefail
+exec 1>&2
+
+if [[ -f glpi-db.env ]] && grep -q '^MARIADB_DB_' glpi-db.env; then
+    python3 - <<'EOF'
+import os
+import agent
+
+old = agent.read_envfile("glpi-db.env")
+new = {
+    "GLPI_DB_HOST": "127.0.0.1",
+    "GLPI_DB_PORT": old.get("MARIADB_DB_PORT", "3306"),
+    "GLPI_DB_NAME": old.get("MARIADB_DB_NAME", "glpi"),
+    "GLPI_DB_USER": old.get("MARIADB_DB_USER", "glpi"),
+    "GLPI_DB_PASSWORD": old.get("MARIADB_DB_PASSWORD", ""),
+}
+agent.write_envfile("glpi-db.env", new)
+os.chmod("glpi-db.env", 0o600)
+print("glpi-db.env converted to the GLPI_DB_* settings")
+EOF
+fi
+chmod 600 database.env glpi-db.env 2>/dev/null || :
+rm -f glpi.env
+
+if ! podman volume exists glpi_html; then
+    exit 0
+fi
+
+# Copy only once, and only into a volume without a configuration
+podman run --rm --interactive --user 0 --network=none --entrypoint /bin/bash \
+    --volume glpi_html:/old:ro,z \
+    --volume glpi-data:/var/glpi:Z \
+    "${GLPI_IMAGE:?}" -s <<'EOS'
+set -e
+if [[ -f /var/glpi/config/config_db.php ]]; then
+    echo "glpi-data already has a configuration: nothing to migrate"
+    exit 0
+fi
+if [[ ! -f /old/config/config_db.php ]]; then
+    echo "glpi_html has no GLPI configuration: nothing to migrate"
+    exit 0
+fi
+mkdir -p /var/glpi/config /var/glpi/files /var/glpi/marketplace /var/glpi/logs
+cp -a /old/config/. /var/glpi/config/
+if [[ -d /old/files ]]; then cp -a /old/files/. /var/glpi/files/; fi
+if [[ -d /old/marketplace ]]; then cp -a /old/marketplace/. /var/glpi/marketplace/; fi
+# The database is on 127.0.0.1 in the pod
+sed -i -E "s/(public \\\$dbhost *= *)'[^']*'/\\1'127.0.0.1'/" /var/glpi/config/config_db.php
+# Cache and sessions of GLPI 10 are not reused
+rm -rf /var/glpi/files/_cache/* /var/glpi/files/_sessions/*
+chown -R www-data:www-data /var/glpi
+echo "GLPI config, files and marketplace copied from glpi_html to glpi-data"
+EOS

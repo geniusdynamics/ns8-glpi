@@ -17,10 +17,10 @@ reponame="glpi"
 # Node.js 25+ no longer ships Corepack, install it from npm
 # renovate: datasource=npm packageName=corepack
 corepack_version=0.36.0
-# renovate: datasource=docker packageName=docker.io/geniusdynamics/glpi
-# Tag of docker.io/geniusdynamics/glpi built from geniusdynamics/docker-glpi
-# (GLPI 10.0.28, PHP 8.3.36 with the PHP2Shell fixes)
-app_version=10.0.28
+# renovate: datasource=docker packageName=docker.io/glpi/glpi
+GLPI_VERSION=11.0.13
+# renovate: datasource=docker packageName=docker.io/mariadb
+MARIADB_VERSION=10.11.19
 # Create a new empty container image
 container=$(buildah from scratch)
 
@@ -53,7 +53,7 @@ buildah config --entrypoint=/ \
 	--label="org.nethserver.tcp-ports-demand=1" \
 	--label="org.nethserver.rootfull=0" \
     --label="org.nethserver.min-core=3.0.0" \
-	--label="org.nethserver.images=docker.io/mariadb:10.11.19 docker.io/geniusdynamics/glpi:${app_version}" \
+	--label="org.nethserver.images=docker.io/mariadb:${MARIADB_VERSION} docker.io/glpi/glpi:${GLPI_VERSION}" \
 	"${container}"
 # Commit the image
 buildah commit "${container}" "${repobase}/${reponame}"
